@@ -35,7 +35,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print("Logging in as \"%s\" to Google Play Music" % args.username)
     pw = getpass.getpass()
-    if not client.login(args.username, pw, Mobileclient.FROM_MAC_ADDRESS)):
+    if not client.login(args.username, pw, Mobileclient.FROM_MAC_ADDRESS):
         print("Authentication failed. Please check the provided credentials.")
     with open(args.source) as f:
         data = json.load(f)
@@ -48,14 +48,15 @@ if __name__ == "__main__":
             print("Importing %s" % playlist["title"])
         toimport = []
         for track in playlist["tracks"]:
-            query = "%s %s" % (track["title"], track["artist"])
-            results = client.search_all_access(query)
+            query = "%s %s" % (track["title"].replace('Album Version', ''), track["artist"])
+            results = client.search(query)
             match = None
             if args.verbose:
                 print("Fetching matches for %s" % query)
             for hit_i, hit in enumerate(results["song_hits"]):
                 if hit_i >= 10:
                     break
+		hit['score'] = 1000.0 # new API doesnt return score
                 if args.verbose and hit_i < 10:
                     print("Hit %d, scoring %.02f: %s by %s in %s" %
                             (hit_i + 1,
